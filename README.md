@@ -1,5 +1,5 @@
 # Custom Sky
-This mod allows you to customize and replace the sky textures.
+This mod allows you to replace the sky textures.
 
 ## Installation
 1. Ensure you have BepInEx installed.
