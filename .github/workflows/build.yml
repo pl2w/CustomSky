@@ -1,35 +1,51 @@
 name: Auto Build
+
 on:
   schedule:
     - cron: '0 19 * * 5'
   workflow_dispatch:
   push:
-      
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   auto-build:
     name: Auto Build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v5
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
-    - name: Setup .NET 10 
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Cache NuGet Packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-    - name: Run the build
-      env:
-        CI: TRUE 
-      run: |
-          dotnet nuget add source https://git.crafterbot.com/api/packages/GorillaTagModding/nuget/index.json
-          dotnet restore
-          dotnet build -c Release
-          
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CustomSky
-        path: |
-          CustomSky/bin/Release/netstandard2.1/CustomSky.dll
-          CustomSky/bin/Release/netstandard2.1/CustomSky.pdb
-        if-no-files-found: error
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Add Custom NuGet Source
+        run: dotnet nuget add source https://git.crafterbot.com/api/packages/GorillaTagModding/nuget/index.json
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Project
+        run: dotnet build -c Release --no-restore
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CustomSky
+          path: |
+            CustomSky/bin/Release/netstandard2.1/CustomSky.dll
+          if-no-files-found: error
+          retention-days: 7
