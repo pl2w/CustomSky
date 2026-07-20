@@ -1,4 +1,5 @@
 name: Auto Build
+
 on:
   schedule:
     - cron: '0 19 * * 5'
@@ -9,33 +10,35 @@ jobs:
   auto-build:
     name: Auto Build
     runs-on: windows-latest
+    
     steps:
-    - uses: actions/checkout@v5
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
-    - name: Cache .NET SDK
-      uses: actions/cache@v4
-      with:
-        path: ~/.dotnet
-        key: ${{ runner.os }}-dotnet-10.0.x
+      - name: Cache .NET SDK
+        uses: actions/cache@v6
+        with:
+          path: ~/.dotnet
+          key: ${{ runner.os }}-dotnet-10.0.x
 
-    - name: Setup .NET 10
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
 
-    - name: Run the build
-      env:
-        CI: TRUE
-      run: |
+      - name: Run the build
+        env:
+          CI: TRUE
+        run: |
           dotnet nuget add source https://git.crafterbot.com/api/packages/GorillaTagModding/nuget/index.json
           dotnet restore
           dotnet build -c Release
 
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: CustomSky
-        path: |
-          CustomSky/bin/Release/netstandard2.1/CustomSky.dll
-          CustomSky/bin/Release/netstandard2.1/CustomSky.pdb
-        if-no-files-found: error
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CustomSky
+          path: |
+            CustomSky/bin/Release/netstandard2.1/CustomSky.dll
+            CustomSky/bin/Release/netstandard2.1/CustomSky.pdb
+          if-no-files-found: error
