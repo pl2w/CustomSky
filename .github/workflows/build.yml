@@ -43,5 +43,4 @@ jobs:
           name: CustomSky
           path: |
             CustomSky/bin/Release/netstandard2.1/CustomSky.dll
-            CustomSky/bin/Release/netstandard2.1/CustomSky.pdb
           if-no-files-found: error
