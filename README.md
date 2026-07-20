@@ -4,7 +4,8 @@ This mod allows you to replace the sky textures.<br>
 
 ## Installation
 1. Ensure you have BepInEx 5 installed.
-2. Drag and drop the mod into your plugins folder.
+2. Download the latest version from the [Releases](https://github.com/pl2w/CustomSky/releases/latest) page
+3. Move the mod into your plugins folder.
    
 ## Usage
 1. **Launch the game once** to generate the necessary folders. <br>This will export the default sky textures into `./SkyboxExport` and create a `./CustomSkies` folder.
