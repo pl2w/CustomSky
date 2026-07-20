@@ -9,7 +9,7 @@ This mod allows you to replace the sky textures.<br>
    
 ## Usage
 1. **Launch the game once** to generate the necessary folders. <br>This will export the default sky textures into `./SkyboxExport` and create a `./CustomSkies` folder.
-2. Place your replacement textures into the `./CustomSkies` folder.
+2. Place your textures into the `./CustomSkies` folder.
    > **Important:** The file names in `./CustomSkies` must match the names of the original textures in `./SkyboxExport` exactly, or the mod will not load them.
 
 ## Disclaimer
