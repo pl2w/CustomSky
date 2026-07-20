@@ -33,13 +33,14 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Run the build
-        env:
-          CI: TRUE
-        run: |
-          dotnet nuget add source https://git.crafterbot.com/api/packages/GorillaTagModding/nuget/index.json
-          dotnet restore
-          dotnet build -c Release
+      - name: Add Custom NuGet Source
+        run: dotnet nuget add source https://git.crafterbot.com/api/packages/GorillaTagModding/nuget/index.json
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Build Project
+        run: dotnet build -c Release --no-restore
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
