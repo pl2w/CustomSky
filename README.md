@@ -23,7 +23,7 @@ A mod for Gorilla Tag that allows you to customize and replace the sky textures.
 ---
       
 ## Configuration
-After the first launch, a config file is generated in `BepInEx/config/xyz.pl2w.customsky.cfg`
+After the first launch, a config file is generated at`BepInEx/config/xyz.pl2w.customsky.cfg`
 
 | Section | Setting | Default | Description |
 |---|---|---|---|
