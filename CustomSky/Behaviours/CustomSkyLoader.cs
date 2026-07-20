@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -5,18 +7,22 @@ namespace CustomSky.Behaviours;
 
 public static class CustomSkyLoader
 {
-    public static void ApplyCustomSkies(string dllDir)
+    private static readonly Dictionary<Texture2D[], Texture2D[]> Originals = new();
+
+    public static IEnumerator ApplyCustomSkiesCoroutine(string dllDir)
     {
         var mgr = BetterDayNightManager.instance;
         if (!mgr) 
-            return;
+            yield break;
+
+        BackupOriginals();
 
         var skyDir = Path.Combine(dllDir, "CustomSkies");
         if (!Directory.Exists(skyDir))
         {
-            Debug.Log("[CustomSky] No CustomSkies folder found, skipping.");
+            Plugin.Log.LogInfo("No CustomSkies folder found, skipping.");
             Directory.CreateDirectory(skyDir);
-            return;
+            yield break;
         }
 
         if (PluginConfig.UseSingleSkyTexture.Value)
@@ -28,9 +34,10 @@ public static class CustomSkyLoader
             }
             else
             {
-                var tex = LoadTexture(filePath);
+                Texture2D tex = null;
+                yield return LoadTextureAsync(filePath, t => tex = t);
                 if (!tex) 
-                    return;
+                    yield break;
                 
                 ApplySingleTexture(mgr.dayNightSkyboxTextures, tex);
                 ApplySingleTexture(mgr.cloudsDayNightSkyboxTextures, tex);
@@ -40,16 +47,18 @@ public static class CustomSkyLoader
         }
         else
         {
-            ApplyLayer(mgr.dayNightSkyboxTextures, skyDir, "Sky", SkySlotMap.SlotToTimeName);
-            ApplyLayer(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SkySlotMap.SlotToTimeName);
-            ApplyLayer(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SkySlotMap.SlotToTimeName);
-            ApplyLayer(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", SkySlotMap.WeatherSlotToName);   
+            yield return ApplyLayerCoroutine(mgr.dayNightSkyboxTextures, skyDir, "Sky", SkySlotMap.SlotToTimeName);
+            yield return ApplyLayerCoroutine(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SkySlotMap.SlotToTimeName);
+            yield return ApplyLayerCoroutine(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SkySlotMap.SlotToTimeName);
+            yield return ApplyLayerCoroutine(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", SkySlotMap.WeatherSlotToName);   
         }
+
+        LightRefresh();
     }
 
-    private static void ApplyLayer(Texture2D[] targetArray, string customDir, string label, string[] slotNames)
+    private static IEnumerator ApplyLayerCoroutine(Texture2D[] targetArray, string customDir, string label, string[] slotNames)
     {
-        var cache = new System.Collections.Generic.Dictionary<string, Texture2D>();
+        var cache = new Dictionary<string, Texture2D>();
 
         for (var i = 0; i < targetArray.Length && i < slotNames.Length; i++)
         {
@@ -61,7 +70,10 @@ public static class CustomSkyLoader
                 if (!File.Exists(filePath))
                     continue;
 
-                tex = LoadTexture(filePath);
+                yield return LoadTextureAsync(filePath, t => tex = t);
+                if (!tex)
+                    continue;
+
                 cache[name] = tex;
             }
 
@@ -80,23 +92,89 @@ public static class CustomSkyLoader
         Plugin.Log.LogInfo($"Applied single texture '{tex.name}' to all {targetArray.Length} slots.");
     }
 
-    private static Texture2D LoadTexture(string filePath)
+    private static IEnumerator LoadTextureAsync(string filePath, System.Action<Texture2D> onComplete)
     {
-        try
+        using var uwr = UnityEngine.Networking.UnityWebRequestTexture.GetTexture("file:///" + filePath);
+        yield return uwr.SendWebRequest();
+
+        if (uwr.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
         {
-            var fileData = File.ReadAllBytes(filePath);
-            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            if (tex.LoadImage(fileData))
-            {
-                tex.name = Path.GetFileNameWithoutExtension(filePath);
-                return tex;
-            }
-            Plugin.Log.LogWarning($"Failed to decode image: {filePath}");
+            var tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(uwr);
+            tex.name = Path.GetFileNameWithoutExtension(filePath);
+            onComplete?.Invoke(tex);
         }
-        catch (System.Exception ex)
+        else
         {
-            Plugin.Log.LogError($"Error loading {filePath}: {ex}");
+            Plugin.Log.LogWarning($"Failed to load {filePath}: {uwr.error}");
+            onComplete?.Invoke(null);
         }
-        return null;
+    }
+
+    private static void BackupOriginals()
+    {
+        var arrays = new[]
+        {
+            BetterDayNightManager.instance.dayNightSkyboxTextures,
+            BetterDayNightManager.instance.cloudsDayNightSkyboxTextures,
+            BetterDayNightManager.instance.beachDayNightSkyboxTextures,
+            BetterDayNightManager.instance.dayNightWeatherSkyboxTextures
+        };
+
+        foreach (var arr in arrays)
+        {
+            if (arr == null || Originals.ContainsKey(arr))
+                continue;
+
+            var backup = new Texture2D[arr.Length];
+            for (var i = 0; i < arr.Length; i++)
+                backup[i] = arr[i];
+
+            Originals[arr] = backup;
+        }
+    }
+
+    public static void DisableCustomSkies()
+    {
+        var mgr = BetterDayNightManager.instance;
+        if (!mgr)
+            return;
+
+        var arrays = new[]
+        {
+            mgr.dayNightSkyboxTextures,
+            mgr.cloudsDayNightSkyboxTextures,
+            mgr.beachDayNightSkyboxTextures,
+            mgr.dayNightWeatherSkyboxTextures
+        };
+
+        var restored = 0;
+        foreach (var arr in arrays)
+        {
+            if (arr == null || !Originals.TryGetValue(arr, out var backup))
+                continue;
+
+            for (var i = 0; i < arr.Length && i < backup.Length; i++)
+                arr[i] = backup[i];
+
+            Originals.Remove(arr);
+            restored++;
+        }
+
+        Plugin.Log.LogInfo($"Disabled custom skies, restored {restored} texture layers.");
+
+        LightRefresh();
+    }
+
+    private static void LightRefresh()
+    {
+        var mgr = BetterDayNightManager.instance;
+        if (!mgr) 
+            return;
+
+        var saved = BetterDayNightManager.allScenesRenderData;
+        BetterDayNightManager.allScenesRenderData = [];
+        var idx = mgr.currentTimeIndex;
+        mgr.ChangeMaps(idx, (idx + 1) % 10);
+        BetterDayNightManager.allScenesRenderData = saved;
     }
 }

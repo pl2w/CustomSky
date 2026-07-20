@@ -1,3 +1,4 @@
+using System.Collections;
 using System.IO;
 using BepInEx;
 using HarmonyLib;
@@ -12,6 +13,8 @@ public class Plugin : BaseUnityPlugin
 {
     public static ManualLogSource Log;
     
+    private bool _initialized, _playerLoaded;
+    
     public Plugin()
     {
         Log = Logger;
@@ -21,18 +24,44 @@ public class Plugin : BaseUnityPlugin
         var harmony = new Harmony(PluginInfo.Guid);
         harmony.PatchAll(Assembly.GetExecutingAssembly());
         
-        GorillaTagger.OnPlayerSpawned(Initialize);
+        GorillaTagger.OnPlayerSpawned(delegate
+        {
+            _playerLoaded = true;
+            Initialize();
+        });
     }
 
     private void Initialize()
     {
+        if(_initialized)
+            return;
+        
         var dllDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var exportDir = Path.Combine(dllDir, "SkyboxExport");
         
         if(!Directory.Exists(exportDir))
             StartCoroutine(SkyboxExporter.ExportAllCoroutine(exportDir));
         
-        CustomSkyLoader.ApplyCustomSkies(dllDir);
+        StartCoroutine(InitCustomSkies(dllDir));
+    }
+
+    private IEnumerator InitCustomSkies(string dllDir)
+    {
+        yield return CustomSkyLoader.ApplyCustomSkiesCoroutine(dllDir);
+        _initialized = true;
+    }
+
+    public void OnEnable()
+    {
+        if(_playerLoaded)
+            Initialize();
+    }
+    
+    public void OnDisable()
+    {
+        CustomSkyLoader.DisableCustomSkies();
+        
+        _initialized = false;
     }
 }
 

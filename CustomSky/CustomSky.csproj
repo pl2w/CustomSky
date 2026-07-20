@@ -9,9 +9,12 @@
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
     </PropertyGroup>
-    
-    <ItemGroup Condition="'$(CI)'=='TRUE'">
+
+    <ItemGroup>
         <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(CI)'=='TRUE'">
         <PackageReference Publicize="true" Include="gorillatag" Version="1.0.*"/>
     </ItemGroup>
 
@@ -78,7 +81,7 @@
             <HintPath>$(GorillaTagDir)/BepInEx/core/MonoMod.Utils.dll</HintPath>
             <Private>false</Private>
         </Reference>
-        <Reference Include="Assembly-CSharp">
+        <Reference Include="Assembly-CSharp" Publicize="true">
             <HintPath>$(GorillaTagDir)/Gorilla Tag_Data/Managed/Assembly-CSharp.dll</HintPath>
             <Private>false</Private>
         </Reference>
@@ -124,6 +127,14 @@
         </Reference>
         <Reference Include="UnityEngine.ImageConversionModule">
             <HintPath>$(GorillaTagDir)/Gorilla Tag_Data/Managed/UnityEngine.ImageConversionModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+            <HintPath>$(GorillaTagDir)/Gorilla Tag_Data/Managed/UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule">
+            <HintPath>$(GorillaTagDir)/Gorilla Tag_Data/Managed/UnityEngine.UnityWebRequestModule.dll</HintPath>
             <Private>false</Private>
         </Reference>
     </ItemGroup>
