@@ -170,11 +170,8 @@ public static class CustomSkyLoader
         var mgr = BetterDayNightManager.instance;
         if (!mgr) 
             return;
-
-        var saved = BetterDayNightManager.allScenesRenderData;
-        BetterDayNightManager.allScenesRenderData = [];
+        
         var idx = mgr.currentTimeIndex;
-        mgr.ChangeMaps(idx, (idx + 1) % 10);
-        BetterDayNightManager.allScenesRenderData = saved;
+        mgr.ChangeMaps(idx, (idx + 1) % BetterDayNightManager.TIME_OF_DAY_COUNT);
     }
 }
