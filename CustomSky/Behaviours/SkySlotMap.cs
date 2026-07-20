@@ -6,6 +6,6 @@ public static class SkySlotMap
         ["night", "sunrise", "sunrise", "day", "day", "day", "sunset", "sunset", "night", "night"];
 
     public static readonly string[] WeatherSlotToName =
-    ["overcastnight", "overcastnight", "overcast", "overcast", "overcast",
+        ["overcastnight", "overcastnight", "overcast", "overcast", "overcast",
         "overcast", "overcast", "overcastnight", "overcastnight", "overcastnight"];
 }

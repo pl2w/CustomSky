@@ -5,14 +5,6 @@ namespace CustomSky.Behaviours;
 
 public static class CustomSkyLoader
 {
-    private static readonly string[] SlotToTimeName = ["night", "sunrise", "sunrise", "day", "day", "day", "sunset", "sunset", "night", "night"];
-
-    private static readonly string[] WeatherSlotToName =
-    [
-        "overcastnight", "overcastnight", "overcast", "overcast", "overcast",
-          "overcast", "overcast", "overcastnight", "overcastnight", "overcastnight"
-    ];
-
     public static void ApplyCustomSkies(string dllDir)
     {
         var mgr = BetterDayNightManager.instance;
@@ -27,10 +19,10 @@ public static class CustomSkyLoader
             return;
         }
 
-        ApplyLayer(mgr.dayNightSkyboxTextures, skyDir, "Sky", SlotToTimeName);
-        ApplyLayer(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SlotToTimeName);
-        ApplyLayer(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SlotToTimeName);
-        ApplyLayer(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", WeatherSlotToName);
+        ApplyLayer(mgr.dayNightSkyboxTextures, skyDir, "Sky", SkySlotMap.SlotToTimeName);
+        ApplyLayer(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SkySlotMap.SlotToTimeName);
+        ApplyLayer(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SkySlotMap.SlotToTimeName);
+        ApplyLayer(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", SkySlotMap.WeatherSlotToName);
     }
 
     private static void ApplyLayer(Texture2D[] targetArray, string customDir, string label, string[] slotNames)

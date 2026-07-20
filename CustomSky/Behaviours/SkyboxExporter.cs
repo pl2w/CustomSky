@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using CustomSky.Behaviours;
 using UnityEngine;
@@ -25,7 +26,7 @@ public static class SkyboxExporter
     
     private static IEnumerator ExportLayerCoroutine(Texture2D[] textures, string outDir, string label, string[] slotNames)
     {
-        var written = new System.Collections.Generic.HashSet<string>();
+        var written = new HashSet<string>();
 
         for (var i = 0; i < textures.Length && i < slotNames.Length; i++)
         {
@@ -47,7 +48,7 @@ public static class SkyboxExporter
     {
         var rt = RenderTexture.GetTemporary(
             source.width, source.height, 0,
-            RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+            RenderTextureFormat.Default, RenderTextureReadWrite.Default);
 
         Graphics.Blit(source, rt);
         var prev = RenderTexture.active;
