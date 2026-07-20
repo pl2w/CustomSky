@@ -5,6 +5,10 @@ on:
     - cron: '0 19 * * 5'
   workflow_dispatch:
   push:
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   auto-build:
@@ -44,3 +48,4 @@ jobs:
           path: |
             CustomSky/bin/Release/netstandard2.1/CustomSky.dll
           if-no-files-found: error
+          retention-days: 7
