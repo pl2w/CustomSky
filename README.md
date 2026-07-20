@@ -11,6 +11,14 @@ This mod allows you to replace the sky textures.<br>
 1. **Launch the game once** to generate the necessary folders. <br>This will export the default sky textures into `./SkyboxExport` and create a `./CustomSkies` folder.
 2. Place your textures into the `./CustomSkies` folder.
    > **Important:** The file names in `./CustomSkies` must match the names of the original textures in `./SkyboxExport` exactly, or the mod will not load them.
+   > 
+## Configuration
+After the first launch, a config file is generated in `BepInEx/config/xyz.pl2w.customsky.cfg`
+
+| Section | Setting | Default | Description |
+|---|---|---|---|
+| Sky | `UseSingleTextureForAllSky` | `false` | If true, use one texture for all sky time-of-day slots instead of per-slot textures. |
+| Sky | `SingleSkyTextureFileName` | `Sky_All.png` | Filename inside `./CustomSkies` used for every sky slot when `UseSingleTextureForAllSky` is true. |
 
 ## Disclaimer
 
