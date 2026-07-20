@@ -28,7 +28,8 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: build-output
+        name: CustomSky
         path: |
-          **/bin/Release/**
+          CustomSky/bin/Release/netstandard2.1/CustomSky.dll
+          CustomSky/bin/Release/netstandard2.1/CustomSky.pdb
         if-no-files-found: error
