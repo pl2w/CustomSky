@@ -19,10 +19,32 @@ public static class CustomSkyLoader
             return;
         }
 
-        ApplyLayer(mgr.dayNightSkyboxTextures, skyDir, "Sky", SkySlotMap.SlotToTimeName);
-        ApplyLayer(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SkySlotMap.SlotToTimeName);
-        ApplyLayer(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SkySlotMap.SlotToTimeName);
-        ApplyLayer(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", SkySlotMap.WeatherSlotToName);
+        if (PluginConfig.UseSingleSkyTexture.Value)
+        {
+            var filePath = Path.Combine(skyDir, PluginConfig.SingleSkyTextureFileName.Value);
+            if (!File.Exists(filePath))
+            {
+                Plugin.Log.LogWarning($"Single texture '{PluginConfig.SingleSkyTextureFileName.Value}' not found at {filePath}, falling back to none.");
+            }
+            else
+            {
+                var tex = LoadTexture(filePath);
+                if (!tex) 
+                    return;
+                
+                ApplySingleTexture(mgr.dayNightSkyboxTextures, tex);
+                ApplySingleTexture(mgr.cloudsDayNightSkyboxTextures, tex);
+                ApplySingleTexture(mgr.beachDayNightSkyboxTextures, tex);
+                ApplySingleTexture(mgr.dayNightWeatherSkyboxTextures, tex);
+            }
+        }
+        else
+        {
+            ApplyLayer(mgr.dayNightSkyboxTextures, skyDir, "Sky", SkySlotMap.SlotToTimeName);
+            ApplyLayer(mgr.cloudsDayNightSkyboxTextures, skyDir, "Clouds", SkySlotMap.SlotToTimeName);
+            ApplyLayer(mgr.beachDayNightSkyboxTextures, skyDir, "Beach", SkySlotMap.SlotToTimeName);
+            ApplyLayer(mgr.dayNightWeatherSkyboxTextures, skyDir, "Weather", SkySlotMap.WeatherSlotToName);   
+        }
     }
 
     private static void ApplyLayer(Texture2D[] targetArray, string customDir, string label, string[] slotNames)
@@ -48,6 +70,14 @@ public static class CustomSkyLoader
         }
 
         Plugin.Log.LogInfo($"Applied {cache.Count} custom textures to {label} layer.");
+    }
+    
+    private static void ApplySingleTexture(Texture2D[] targetArray, Texture2D tex)
+    {
+        for (var i = 0; i < targetArray.Length; i++)
+            targetArray[i] = tex;
+
+        Plugin.Log.LogInfo($"Applied single texture '{tex.name}' to all {targetArray.Length} slots.");
     }
 
     private static Texture2D LoadTexture(string filePath)

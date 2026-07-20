@@ -16,6 +16,8 @@ public class Plugin : BaseUnityPlugin
     {
         Log = Logger;
         
+        PluginConfig.Init(Config);
+        
         var harmony = new Harmony(PluginInfo.Guid);
         harmony.PatchAll(Assembly.GetExecutingAssembly());
         
