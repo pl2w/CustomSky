@@ -9,7 +9,7 @@ on:
 jobs:
   auto-build:
     name: Auto Build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout Repository
