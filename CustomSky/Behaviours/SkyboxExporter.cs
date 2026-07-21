@@ -21,7 +21,7 @@ public static class SkyboxExporter
         yield return ExportLayerCoroutine(mgr.beachDayNightSkyboxTextures, exportDir, "Beach", SkySlotMap.SlotToTimeName);
         yield return ExportLayerCoroutine(mgr.dayNightWeatherSkyboxTextures, exportDir, "Weather", SkySlotMap.WeatherSlotToName);
 
-        Plugin.Log.LogInfo($"Exported skyboxes to {exportDir}");
+        Plugin.Log.LogInfo($"Exported sky textures to {exportDir}");
     }
     
     private static IEnumerator ExportLayerCoroutine(Texture2D[] textures, string outDir, string label, string[] slotNames)
