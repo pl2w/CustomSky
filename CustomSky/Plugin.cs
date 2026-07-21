@@ -5,6 +5,7 @@ using HarmonyLib;
 using System.Reflection;
 using BepInEx.Logging;
 using CustomSky.Behaviours;
+using UnityEngine;
 
 namespace CustomSky;
 
@@ -12,18 +13,20 @@ namespace CustomSky;
 public class Plugin : BaseUnityPlugin
 {
     public static ManualLogSource Log;
-    
+
     private bool _initialized, _playerLoaded;
     
+    private Coroutine _initCoro;
+
     public Plugin()
     {
         Log = Logger;
-        
+
         PluginConfig.Init(Config);
-        
+
         var harmony = new Harmony(PluginInfo.Guid);
         harmony.PatchAll(Assembly.GetExecutingAssembly());
-        
+
         GorillaTagger.OnPlayerSpawned(delegate
         {
             _playerLoaded = true;
@@ -35,19 +38,20 @@ public class Plugin : BaseUnityPlugin
     {
         if(_initialized)
             return;
-        
+
         var dllDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         var exportDir = Path.Combine(dllDir, "SkyboxExport");
         
         if(!Directory.Exists(exportDir))
             StartCoroutine(SkyboxExporter.ExportAllCoroutine(exportDir));
-        
-        StartCoroutine(InitCustomSkies(dllDir));
+
+        _initCoro = StartCoroutine(InitCustomSkies(dllDir));
     }
 
     private IEnumerator InitCustomSkies(string dllDir)
     {
         yield return CustomSkyLoader.ApplyCustomSkiesCoroutine(dllDir);
+        
         _initialized = true;
     }
 
@@ -56,9 +60,15 @@ public class Plugin : BaseUnityPlugin
         if(_playerLoaded)
             Initialize();
     }
-    
+
     public void OnDisable()
     {
+        if (_initCoro != null)
+        {
+            StopCoroutine(_initCoro);
+            _initCoro = null;
+        }
+        
         CustomSkyLoader.DisableCustomSkies();
         
         _initialized = false;

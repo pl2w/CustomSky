@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -92,15 +93,20 @@ public static class CustomSkyLoader
         Plugin.Log.LogInfo($"Applied single texture '{tex.name}' to all {targetArray.Length} slots.");
     }
 
-    private static IEnumerator LoadTextureAsync(string filePath, System.Action<Texture2D> onComplete)
+    private static IEnumerator LoadTextureAsync(string filePath, Action<Texture2D> onComplete)
     {
-        using var uwr = UnityEngine.Networking.UnityWebRequestTexture.GetTexture("file:///" + filePath);
+        var uri = new Uri(filePath).AbsoluteUri;
+        using var uwr = UnityEngine.Networking.UnityWebRequestTexture.GetTexture(uri);
         yield return uwr.SendWebRequest();
 
         if (uwr.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
         {
             var tex = UnityEngine.Networking.DownloadHandlerTexture.GetContent(uwr);
             tex.name = Path.GetFileNameWithoutExtension(filePath);
+            tex.filterMode = FilterMode.Point;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.anisoLevel = 0; 
+            
             onComplete?.Invoke(tex);
         }
         else
