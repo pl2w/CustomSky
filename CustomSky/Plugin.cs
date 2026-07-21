@@ -79,5 +79,5 @@ public static class PluginInfo
 {
     public const string Guid = "xyz.pl2w.customsky";
     public const string Name = "CustomSky";
-    public const string Version = "1.0.1";
+    public const string Version = "1.0.2";
 }
