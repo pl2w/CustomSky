@@ -15,9 +15,10 @@ public class Plugin : BaseUnityPlugin
     public static ManualLogSource Log;
 
     private bool _initialized, _playerLoaded;
-    
-    private Coroutine _initCoro;
+    private bool _isAlreadyDynalit;
 
+    private Coroutine _initCoro;
+    
     public Plugin()
     {
         Log = Logger;
@@ -40,18 +41,33 @@ public class Plugin : BaseUnityPlugin
             return;
 
         var dllDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        var exportDir = Path.Combine(dllDir, "SkyboxExport");
-        
-        if(!Directory.Exists(exportDir))
-            StartCoroutine(SkyboxExporter.ExportAllCoroutine(exportDir));
 
+        _isAlreadyDynalit = GameLightingManager.instance.customVertexLightingEnabled;
         _initCoro = StartCoroutine(InitCustomSkies(dllDir));
     }
 
     private IEnumerator InitCustomSkies(string dllDir)
     {
-        yield return CustomSkyLoader.ApplyCustomSkiesCoroutine(dllDir);
+        var exportDir = Path.Combine(dllDir, "SkyboxExport");
         
+        if (!Directory.Exists(exportDir))
+            yield return SkyboxExporter.ExportAllCoroutine(exportDir);
+
+        yield return CustomSkyLoader.ApplyCustomSkiesCoroutine(dllDir);
+
+        if (!_isAlreadyDynalit)
+        {
+            GameLightingManager.instance.SetCustomDynamicLightingEnabled(true);
+            
+            var currentDominantSky = BetterDayNightManager.instance.currentLerp < 0.5f
+                ? BetterDayNightManager.instance.fromSky
+                : BetterDayNightManager.instance.toSky;
+
+            var color = Utils.ColorUtils.GetDominantColor(currentDominantSky);
+            
+            GameLightingManager.instance.SetAmbientLightDynamic(color);
+        }
+    
         _initialized = true;
     }
 
@@ -68,9 +84,17 @@ public class Plugin : BaseUnityPlugin
             StopCoroutine(_initCoro);
             _initCoro = null;
         }
-        
-        CustomSkyLoader.DisableCustomSkies();
-        
+
+        if (_initialized)
+        {
+            if (!_isAlreadyDynalit)
+            {
+                GameLightingManager.instance.SetCustomDynamicLightingEnabled(false);
+            }
+
+            CustomSkyLoader.DisableCustomSkies();
+        }
+
         _initialized = false;
     }
 }
@@ -79,5 +103,5 @@ public static class PluginInfo
 {
     public const string Guid = "xyz.pl2w.customsky";
     public const string Name = "CustomSky";
-    public const string Version = "1.0.2";
+    public const string Version = "1.1.0";
 }

@@ -15,9 +15,7 @@ public static class CustomSkyLoader
         var mgr = BetterDayNightManager.instance;
         if (!mgr) 
             yield break;
-
-        BackupOriginals();
-
+        
         var skyDir = Path.Combine(dllDir, "CustomSkies");
         if (!Directory.Exists(skyDir))
         {
@@ -25,6 +23,8 @@ public static class CustomSkyLoader
             Directory.CreateDirectory(skyDir);
             yield break;
         }
+        
+        BackupOriginals();
 
         if (PluginConfig.UseSingleSkyTexture.Value)
         {
